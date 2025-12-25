@@ -89,7 +89,7 @@ export default function LoginPage() {
               <p className="text-sm text-blue-700">
                 경기도사회서비스원 직원만 이용 가능합니다.
                 <br />
-                <strong>@ggpass.or.kr</strong> 이메일로 로그인하세요.
+                <strong>@gg.pass.or.kr</strong> 이메일로 로그인하세요.
               </p>
             </div>
           </div>
@@ -106,7 +106,7 @@ export default function LoginPage() {
               id="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="your.name@ggpass.or.kr"
+              placeholder="your.name@gg.pass.or.kr"
               required
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             />

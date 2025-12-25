@@ -101,7 +101,7 @@ export default function SignupPage() {
               <div className="mt-2 text-sm text-blue-700">
                 <ul className="list-disc list-inside space-y-1">
                   <li>
-                    <strong>@ggpass.or.kr</strong> 이메일만 가입 가능합니다.
+                    <strong>@gg.pass.or.kr</strong> 이메일만 가입 가능합니다.
                   </li>
                   <li>개인정보는 이메일 주소만 수집됩니다.</li>
                   <li>관리자 승인 후 서비스 이용이 가능합니다.</li>
@@ -122,7 +122,7 @@ export default function SignupPage() {
               id="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="your.name@ggpass.or.kr"
+              placeholder="your.name@gg.pass.or.kr"
               required
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             />
@@ -190,7 +190,7 @@ export default function SignupPage() {
             </a>
             에 동의한 것으로 간주됩니다.
             <br />
-            수집되는 개인정보: 이메일 주소 (@ggpass.or.kr)
+            수집되는 개인정보: 이메일 주소 (@gg.pass.or.kr)
           </p>
         </div>
       </div>

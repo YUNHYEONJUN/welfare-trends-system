@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const ALLOWED_DOMAIN = '@ggpass.or.kr';
+const ALLOWED_DOMAIN = '@gg.pass.or.kr';
 
 interface SignupRequest {
   email: string;
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 이메일 형식 검증
-    const emailRegex = /^[^\s@]+@ggpass\.or\.kr$/;
+    const emailRegex = /^[^\s@]+@gg\.pass\.or\.kr$/;
     if (!emailRegex.test(email)) {
       return NextResponse.json(
         { success: false, message: '올바른 이메일 형식이 아닙니다.' },

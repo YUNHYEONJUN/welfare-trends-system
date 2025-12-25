@@ -7,7 +7,7 @@
 ## 📌 시스템 개요
 
 ### 주요 특징
-- ✅ **@ggpass.or.kr** 이메일만 가입 가능
+- ✅ **@gg.pass.or.kr** 이메일만 가입 가능
 - ✅ 관리자 승인 후 이용 가능
 - ✅ 부서별 사용자 관리
 - ✅ 사용자 활동 추적 및 통계
@@ -54,7 +54,7 @@ npm run dev
 
 #### 1. 회원가입
 1. `/auth/signup` 접속
-2. `@ggpass.or.kr` 이메일 입력
+2. `@gg.pass.or.kr` 이메일 입력
 3. 가입 신청 완료
 4. **관리자 승인 대기**
 
@@ -107,7 +107,7 @@ npm run dev
 #### 1. `users` - 사용자
 ```sql
 - id: UUID (PK)
-- email: VARCHAR(255) UNIQUE (CHECK: @ggpass.or.kr만)
+- email: VARCHAR(255) UNIQUE (CHECK: @gg.pass.or.kr만)
 - department_id: UUID (FK)
 - role: VARCHAR(20) (user/admin)
 - status: VARCHAR(20) (pending/approved/rejected/suspended)
@@ -221,7 +221,7 @@ ORDER BY activity_date DESC;
 **Request:**
 ```json
 {
-  "email": "hong.gildong@ggpass.or.kr"
+  "email": "hong.gildong@gg.pass.or.kr"
 }
 ```
 
@@ -232,7 +232,7 @@ ORDER BY activity_date DESC;
   "message": "가입 신청이 완료되었습니다. 관리자 승인 후 이용 가능합니다.",
   "user": {
     "id": "uuid",
-    "email": "hong.gildong@ggpass.or.kr",
+    "email": "hong.gildong@gg.pass.or.kr",
     "status": "pending",
     "created_at": "2025-12-25T00:00:00Z"
   }
@@ -245,7 +245,7 @@ ORDER BY activity_date DESC;
 **Request:**
 ```json
 {
-  "email": "hong.gildong@ggpass.or.kr"
+  "email": "hong.gildong@gg.pass.or.kr"
 }
 ```
 
@@ -256,7 +256,7 @@ ORDER BY activity_date DESC;
   "message": "로그인 성공",
   "user": {
     "id": "uuid",
-    "email": "hong.gildong@ggpass.or.kr",
+    "email": "hong.gildong@gg.pass.or.kr",
     "role": "user",
     "status": "approved",
     "department_name": "사업운영팀"
@@ -347,7 +347,7 @@ ORDER BY activity_date DESC;
 ## 🔐 보안 및 개인정보
 
 ### 수집하는 정보
-- ✅ **이메일 주소** (@ggpass.or.kr)
+- ✅ **이메일 주소** (@gg.pass.or.kr)
 - ❌ 이름, 전화번호, 주소 등 **수집하지 않음**
 
 ### 활동 추적
@@ -369,7 +369,7 @@ ORDER BY activity_date DESC;
 
 ### 1. 회원가입 (`/auth/signup`)
 - 이메일 입력
-- 도메인 검증 (@ggpass.or.kr)
+- 도메인 검증 (@gg.pass.or.kr)
 - 가입 신청 완료 메시지
 
 ### 2. 로그인 (`/auth/login`)
@@ -452,7 +452,7 @@ curl "http://localhost:3000/api/admin/stats?type=daily&start_date=2025-12-01&end
 ## 🔧 문제 해결
 
 ### 회원가입이 안 됩니다
-- ✅ `@ggpass.or.kr` 이메일인지 확인
+- ✅ `@gg.pass.or.kr` 이메일인지 확인
 - ✅ 이미 가입된 이메일인지 확인
 - ✅ 데이터베이스 연결 확인
 

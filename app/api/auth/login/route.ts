@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const ALLOWED_DOMAIN = '@ggpass.or.kr';
+const ALLOWED_DOMAIN = '@gg.pass.or.kr';
 
 interface LoginRequest {
   email: string;
