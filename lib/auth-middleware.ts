@@ -69,7 +69,7 @@ export function verifyToken(request: NextRequest): AuthUser | null {
 /**
  * JWT 토큰 생성
  */
-export function generateToken(user: AuthUser, expiresIn: string = '7d'): string {
+export function generateToken(user: AuthUser, expiresIn: string | number = '7d'): string {
   return jwt.sign(
     {
       id: user.id,
@@ -80,7 +80,7 @@ export function generateToken(user: AuthUser, expiresIn: string = '7d'): string 
       status: user.status,
     },
     JWT_SECRET,
-    { expiresIn }
+    { expiresIn } as jwt.SignOptions
   );
 }
 
