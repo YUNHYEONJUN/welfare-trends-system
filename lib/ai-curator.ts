@@ -29,6 +29,8 @@ export interface RawContent {
   published_at: Date;
   category: string;
   tags: string[];
+  region?: string | null;
+  content_type?: string | null;
 }
 
 // 큐레이션된 콘텐츠 그룹

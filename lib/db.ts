@@ -2,7 +2,7 @@
  * PostgreSQL 데이터베이스 연결 및 헬퍼 함수
  */
 
-import { Pool, QueryResult } from 'pg';
+import { Pool, QueryResult, QueryResultRow } from 'pg';
 
 // PostgreSQL 연결 풀
 let pool: Pool | null = null;
@@ -37,7 +37,7 @@ export function getPool(): Pool {
 /**
  * 데이터베이스 쿼리 실행
  */
-export async function query<T = any>(
+export async function query<T extends QueryResultRow = any>(
   text: string,
   params?: any[]
 ): Promise<QueryResult<T>> {
