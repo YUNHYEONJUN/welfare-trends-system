@@ -1,0 +1,79 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: welfare-trends-db
+    environment:
+      POSTGRES_DB: welfare_trends
+      POSTGRES_USER: ${DB_USER:-welfare_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_INITDB_ARGS: "-E UTF8 --locale=ko_KR.UTF-8"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./lib/auth-schema.sql:/docker-entrypoint-initdb.d/1-auth-schema.sql
+      - ./lib/db-schema.sql:/docker-entrypoint-initdb.d/2-db-schema.sql
+      - ./lib/curation-schema.sql:/docker-entrypoint-initdb.d/3-curation-schema.sql
+      - ./add_password_field.sql:/docker-entrypoint-initdb.d/4-add-password.sql
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-welfare_user}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - welfare-network
+
+  # Next.js Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NODE_ENV: production
+    container_name: welfare-trends-app
+    environment:
+      DATABASE_URL: postgresql://${DB_USER:-welfare_user}:${DB_PASSWORD}@postgres:5432/welfare_trends
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-https://api.openai.com/v1}
+      JWT_SECRET: ${JWT_SECRET}
+      NEXTAUTH_URL: ${NEXTAUTH_URL}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
+      NODE_ENV: production
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - welfare-network
+    volumes:
+      - ./logs:/app/logs
+
+  # Nginx Reverse Proxy (Optional)
+  nginx:
+    image: nginx:alpine
+    container_name: welfare-trends-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - app
+    restart: unless-stopped
+    networks:
+      - welfare-network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  welfare-network:
+    driver: bridge
