@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS contents (
   title VARCHAR(500) NOT NULL,
   summary TEXT,
   full_content TEXT NOT NULL,
-  category VARCHAR(50) NOT NULL CHECK (category IN ('academy', 'policy', 'thoughts', 'social-service')),
+  category VARCHAR(50) NOT NULL CHECK (category IN ('academy', 'policy', 'thoughts', 'social-service', 'elder-protection')),
   source VARCHAR(100) NOT NULL,
   source_url TEXT,
   thumbnail_url TEXT,
@@ -21,7 +21,9 @@ CREATE TABLE IF NOT EXISTS contents (
   is_highlight BOOLEAN DEFAULT FALSE, -- 주요 기사 여부
   region VARCHAR(50), -- 사회서비스원 지역
   content_type VARCHAR(50), -- social-service의 경우: policy, news, notice, recruitment
-  CONSTRAINT valid_category CHECK (category IN ('academy', 'policy', 'thoughts', 'social-service'))
+  access_level VARCHAR(50) DEFAULT 'public', -- public, department_only
+  allowed_departments TEXT[], -- 접근 가능한 부서 목록
+  CONSTRAINT valid_category CHECK (category IN ('academy', 'policy', 'thoughts', 'social-service', 'elder-protection'))
 );
 
 -- 크롤링 소스 테이블

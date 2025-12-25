@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getUserByEmail, updateLastLogin, logUserActivity } from '@/lib/db';
+import { generateToken, AuthUser } from '@/lib/auth-middleware';
 
 const ALLOWED_DOMAIN = '@gg.pass.or.kr';
 
@@ -30,29 +32,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // TODO: 데이터베이스 연결 후 실제 구현
+    // 데이터베이스에서 사용자 조회
+    const user = await getUserByEmail(email);
     
-    // 실제 구현 예시:
-    /*
-    const db = getDatabase();
-    
-    // 사용자 조회
-    const result = await db.query(
-      `SELECT u.*, d.name as department_name 
-       FROM users u 
-       LEFT JOIN departments d ON u.department_id = d.id 
-       WHERE u.email = $1`,
-      [email]
-    );
-    
-    if (result.rows.length === 0) {
+    if (!user) {
       return NextResponse.json(
         { success: false, message: '등록되지 않은 이메일입니다.' },
         { status: 404 }
       );
     }
-    
-    const user = result.rows[0];
     
     // 승인 상태 확인
     if (user.status === 'pending') {
@@ -85,32 +73,33 @@ export async function POST(request: NextRequest) {
     }
     
     // 마지막 로그인 시간 업데이트
-    await db.query(
-      'UPDATE users SET last_login_at = NOW() WHERE id = $1',
-      [user.id]
-    );
+    await updateLastLogin(user.id);
     
     // 로그인 활동 기록
     const ipAddress = request.headers.get('x-forwarded-for') || 
-                     request.headers.get('x-real-ip') || 
-                     'unknown';
-    const userAgent = request.headers.get('user-agent') || 'unknown';
+                     request.headers.get('x-real-ip') || undefined;
+    const userAgent = request.headers.get('user-agent') || undefined;
     
-    await db.query(
-      `INSERT INTO user_activities (user_id, activity_type, ip_address, user_agent)
-       VALUES ($1, 'login', $2, $3)`,
-      [user.id, ipAddress, userAgent]
+    await logUserActivity(
+      user.id,
+      'login',
+      undefined,
+      undefined,
+      ipAddress,
+      userAgent
     );
     
-    // 세션 토큰 생성
-    const sessionToken = generateSessionToken();
-    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7일
+    // JWT 토큰 생성
+    const authUser: AuthUser = {
+      id: user.id,
+      email: user.email,
+      department_id: user.department_id,
+      department_name: user.department_name || '',
+      role: user.role,
+      status: user.status,
+    };
     
-    await db.query(
-      `INSERT INTO user_sessions (user_id, session_token, expires_at, ip_address, user_agent)
-       VALUES ($1, $2, $3, $4, $5)`,
-      [user.id, sessionToken, expiresAt, ipAddress, userAgent]
-    );
+    const token = generateToken(authUser, '7d'); // 7일 유효
     
     return NextResponse.json({
       success: true,
@@ -123,22 +112,7 @@ export async function POST(request: NextRequest) {
         department_id: user.department_id,
         department_name: user.department_name
       },
-      token: sessionToken
-    });
-    */
-
-    // Mock 응답 (데이터베이스 연결 전)
-    return NextResponse.json({
-      success: true,
-      message: '로그인 성공',
-      user: {
-        id: 'mock-user-id',
-        email: email,
-        role: 'user',
-        status: 'approved',
-        department_name: '경기북서부노인보호전문기관'
-      },
-      token: 'mock-session-token'
+      token
     });
 
   } catch (error) {
