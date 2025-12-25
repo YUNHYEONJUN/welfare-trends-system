@@ -7,7 +7,7 @@ export const maxDuration = 300;
 export async function GET(request: Request) {
   try {
     // Vercel Cron 인증 확인
-    const authHeader = headers().get('authorization');
+    const authHeader = (await headers()).get('authorization');
     
     if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
       console.error('[Cron/Crawl] Unauthorized access attempt');
