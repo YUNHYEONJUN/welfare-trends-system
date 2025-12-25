@@ -77,8 +77,8 @@ CREATE INDEX IF NOT EXISTS idx_notifications_read ON notifications(read) WHERE r
 CREATE INDEX IF NOT EXISTS idx_notifications_type ON notifications(notification_type);
 CREATE INDEX IF NOT EXISTS idx_update_logs_created_at ON update_logs(created_at DESC);
 
--- 전체 텍스트 검색을 위한 인덱스
-CREATE INDEX IF NOT EXISTS idx_contents_search ON contents USING GIN(to_tsvector('korean', title || ' ' || COALESCE(summary, '') || ' ' || full_content));
+-- 전체 텍스트 검색을 위한 인덱스 (simple로 변경 - 한글 지원)
+CREATE INDEX IF NOT EXISTS idx_contents_search ON contents USING GIN(to_tsvector('simple', title || ' ' || COALESCE(summary, '') || ' ' || full_content));
 
 -- 트리거: updated_at 자동 업데이트
 CREATE OR REPLACE FUNCTION update_updated_at_column()

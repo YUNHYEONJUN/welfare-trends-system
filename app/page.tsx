@@ -6,10 +6,28 @@ export default function Home() {
       {/* 헤더 */}
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <h1 className="text-3xl font-bold text-gray-900">
-            경기북서부노인보호전문기관
-          </h1>
-          <p className="mt-2 text-lg text-gray-600">복지동향 정보 시스템</p>
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">
+                경기북서부노인보호전문기관
+              </h1>
+              <p className="mt-2 text-lg text-gray-600">복지동향 정보 시스템</p>
+            </div>
+            <div className="flex gap-4">
+              <Link
+                href="/auth/login"
+                className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+              >
+                로그인
+              </Link>
+              <Link
+                href="/auth/signup"
+                className="px-6 py-2.5 border-2 border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors font-medium"
+              >
+                회원가입
+              </Link>
+            </div>
+          </div>
         </div>
       </header>
 
@@ -26,10 +44,26 @@ export default function Home() {
           </p>
         </section>
 
+        {/* 로그인 안내 */}
+        <div className="bg-blue-50 border-l-4 border-blue-500 p-6 mb-8 rounded-r-lg">
+          <div className="flex items-center">
+            <div className="flex-shrink-0">
+              <svg className="h-6 w-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-blue-700">
+                콘텐츠를 확인하시려면 <Link href="/auth/login" className="font-medium underline hover:text-blue-800">로그인</Link>이 필요합니다.
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* 카테고리 카드 */}
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
           {/* 학술 */}
-          <Link href="/academy">
+          <Link href="/auth/login?redirect=/academy">
             <div className="bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition-shadow cursor-pointer border-t-4 border-blue-500">
               <div className="text-blue-500 mb-4">
                 <svg
@@ -54,7 +88,7 @@ export default function Home() {
           </Link>
 
           {/* 정책 */}
-          <Link href="/policy">
+          <Link href="/auth/login?redirect=/policy">
             <div className="bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition-shadow cursor-pointer border-t-4 border-green-500">
               <div className="text-green-500 mb-4">
                 <svg
@@ -79,7 +113,7 @@ export default function Home() {
           </Link>
 
           {/* 짧은생각 */}
-          <Link href="/thoughts">
+          <Link href="/auth/login?redirect=/thoughts">
             <div className="bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition-shadow cursor-pointer border-t-4 border-purple-500">
               <div className="text-purple-500 mb-4">
                 <svg
@@ -104,7 +138,7 @@ export default function Home() {
           </Link>
 
           {/* 사회서비스원 */}
-          <Link href="/social-service">
+          <Link href="/auth/login?redirect=/social-service">
             <div className="bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition-shadow cursor-pointer border-t-4 border-indigo-500">
               <div className="text-indigo-500 mb-4">
                 <svg
