@@ -87,7 +87,7 @@ export async function GET(request: NextRequest) {
     const mockUsers = [
       {
         id: '1',
-        email: 'hong.gildong@ggpass.or.kr',
+        email: 'hong.gildong@gg.pass.or.kr',
         department_id: '1',
         department_name: '사업운영팀',
         role: 'user',
@@ -96,9 +96,9 @@ export async function GET(request: NextRequest) {
       },
       {
         id: '2',
-        email: 'kim.chulsoo@ggpass.or.kr',
+        email: 'kim.chulsoo@gg.pass.or.kr',
         department_id: '2',
-        department_name: '돌봄서비스팀',
+        department_name: '경기북서부노인보호전문기관',
         role: 'user',
         status: 'approved',
         approved_at: new Date('2025-12-21'),
@@ -107,7 +107,7 @@ export async function GET(request: NextRequest) {
       },
       {
         id: '3',
-        email: 'lee.younghee@ggpass.or.kr',
+        email: 'lee.younghee@gg.pass.or.kr',
         department_id: '1',
         department_name: '사업운영팀',
         role: 'user',

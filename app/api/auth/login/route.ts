@@ -136,7 +136,7 @@ export async function POST(request: NextRequest) {
         email: email,
         role: 'user',
         status: 'approved',
-        department_name: '사업운영팀'
+        department_name: '경기북서부노인보호전문기관'
       },
       token: 'mock-session-token'
     });

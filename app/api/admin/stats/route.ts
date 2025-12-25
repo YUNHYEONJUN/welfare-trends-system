@@ -129,7 +129,7 @@ export async function GET(request: NextRequest) {
       const mockUserStats = [
         {
           id: '1',
-          email: 'kim.chulsoo@ggpass.or.kr',
+          email: 'kim.chulsoo@gg.pass.or.kr',
           department_name: '돌봄서비스팀',
           total_activities: 245,
           content_views: 120,
@@ -139,7 +139,7 @@ export async function GET(request: NextRequest) {
         },
         {
           id: '2',
-          email: 'lee.younghee@ggpass.or.kr',
+          email: 'lee.younghee@gg.pass.or.kr',
           department_name: '사업운영팀',
           total_activities: 198,
           content_views: 95,
@@ -149,8 +149,8 @@ export async function GET(request: NextRequest) {
         },
         {
           id: '3',
-          email: 'park.minho@ggpass.or.kr',
-          department_name: '교육연구팀',
+          email: 'park.minho@gg.pass.or.kr',
+          department_name: '돌봄사업본부',
           total_activities: 167,
           content_views: 82,
           searches: 54,
@@ -184,7 +184,7 @@ export async function GET(request: NextRequest) {
         },
         {
           id: '3',
-          name: '교육연구팀',
+          name: '돌봄사업본부',
           user_count: 18,
           total_activities: 1567,
           content_views: 789,
