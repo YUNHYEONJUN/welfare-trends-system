@@ -1,14 +1,12 @@
 import { NextResponse } from 'next/server';
-import { headers } from 'next/headers';
 
 // Vercel Pro: 최대 5분 실행
 export const maxDuration = 300;
 
 export async function GET(request: Request) {
   try {
-    // Vercel Cron 인증 확인
-    const headersList = await headers();
-    const authHeader = headersList.get('authorization');
+    // Vercel Cron 인증 확인 - Request 객체에서 직접 헤더 가져오기
+    const authHeader = request.headers.get('authorization');
     
     if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
       console.error('[Cron/Crawl] Unauthorized access attempt');
