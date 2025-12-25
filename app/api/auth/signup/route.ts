@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 const ALLOWED_DOMAIN = '@gg.pass.or.kr';
+const ALLOWED_ADMIN_EMAILS = ['yoonhj79@gmail.com'];
 
 interface SignupRequest {
   email: string;
@@ -19,8 +20,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 이메일 도메인 검증
-    if (!email.endsWith(ALLOWED_DOMAIN)) {
+    // 이메일 도메인 검증 (허용된 도메인 또는 관리자 이메일)
+    const isAllowedDomain = email.endsWith(ALLOWED_DOMAIN);
+    const isAllowedAdminEmail = ALLOWED_ADMIN_EMAILS.includes(email);
+    
+    if (!isAllowedDomain && !isAllowedAdminEmail) {
       return NextResponse.json(
         { 
           success: false, 
@@ -30,13 +34,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 이메일 형식 검증
-    const emailRegex = /^[^\s@]+@gg\.pass\.or\.kr$/;
-    if (!emailRegex.test(email)) {
-      return NextResponse.json(
-        { success: false, message: '올바른 이메일 형식이 아닙니다.' },
-        { status: 400 }
-      );
+    // 이메일 형식 검증 (일반 직원용)
+    if (isAllowedDomain) {
+      const emailRegex = /^[^\s@]+@gg\.pass\.or\.kr$/;
+      if (!emailRegex.test(email)) {
+        return NextResponse.json(
+          { success: false, message: '올바른 이메일 형식이 아닙니다.' },
+          { status: 400 }
+        );
+      }
+    }
+    
+    // 관리자 이메일 형식 검증
+    if (isAllowedAdminEmail) {
+      const adminEmailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!adminEmailRegex.test(email)) {
+        return NextResponse.json(
+          { success: false, message: '올바른 이메일 형식이 아닙니다.' },
+          { status: 400 }
+        );
+      }
     }
 
     // TODO: 데이터베이스 연결 후 실제 구현

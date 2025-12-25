@@ -3,6 +3,7 @@ import { getUserByEmail, updateLastLogin, logUserActivity } from '@/lib/db';
 import { generateToken, AuthUser } from '@/lib/auth-middleware';
 
 const ALLOWED_DOMAIN = '@gg.pass.or.kr';
+const ALLOWED_ADMIN_EMAILS = ['yoonhj79@gmail.com'];
 
 interface LoginRequest {
   email: string;
@@ -21,12 +22,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 이메일 도메인 검증
-    if (!email.endsWith(ALLOWED_DOMAIN)) {
+    // 이메일 도메인 검증 (허용된 도메인 또는 관리자 이메일)
+    const isAllowedDomain = email.endsWith(ALLOWED_DOMAIN);
+    const isAllowedAdminEmail = ALLOWED_ADMIN_EMAILS.includes(email);
+    
+    if (!isAllowedDomain && !isAllowedAdminEmail) {
       return NextResponse.json(
         { 
           success: false, 
-          message: '경기도사회서비스원 이메일만 로그인 가능합니다.' 
+          message: '경기도사회서비스원 이메일 또는 관리자 이메일만 로그인 가능합니다.' 
         },
         { status: 403 }
       );

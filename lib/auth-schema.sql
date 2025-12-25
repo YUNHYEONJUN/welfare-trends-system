@@ -14,8 +14,11 @@ CREATE TABLE IF NOT EXISTS departments (
 CREATE TABLE IF NOT EXISTS users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   email VARCHAR(255) NOT NULL UNIQUE,
-  -- @gg.pass.or.kr 이메일만 허용
-  CONSTRAINT valid_email CHECK (email LIKE '%@gg.pass.or.kr'),
+  -- @gg.pass.or.kr 이메일 또는 특정 관리자 이메일 허용
+  CONSTRAINT valid_email CHECK (
+    email LIKE '%@gg.pass.or.kr' 
+    OR email IN ('yoonhj79@gmail.com')
+  ),
   department_id UUID REFERENCES departments(id) ON DELETE SET NULL,
   role VARCHAR(20) NOT NULL DEFAULT 'user' CHECK (role IN ('user', 'admin')),
   status VARCHAR(20) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected', 'suspended')),
@@ -201,8 +204,8 @@ FROM admin_activities
 GROUP BY DATE(created_at), action
 ORDER BY action_date DESC, action_count DESC;
 
-COMMENT ON TABLE users IS '경기도사회서비스원 직원 사용자 테이블 (@gg.pass.or.kr 이메일만 허용)';
+COMMENT ON TABLE users IS '경기도사회서비스원 직원 사용자 테이블 (@gg.pass.or.kr 이메일 또는 특정 관리자 이메일 허용)';
 COMMENT ON TABLE user_activities IS '사용자 활동 로그 (개인정보 미수집, 이메일만 저장)';
 COMMENT ON TABLE departments IS '경기도사회서비스원 부서 정보';
-COMMENT ON COLUMN users.email IS '사용자 이메일 (@gg.pass.or.kr 도메인만 허용)';
+COMMENT ON COLUMN users.email IS '사용자 이메일 (@gg.pass.or.kr 도메인 또는 yoonhj79@gmail.com 허용)';
 COMMENT ON COLUMN users.status IS 'pending: 승인 대기, approved: 승인됨, rejected: 거부됨, suspended: 정지됨';
