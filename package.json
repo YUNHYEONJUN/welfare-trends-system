@@ -14,8 +14,11 @@
     "crawl:schedule": "tsx lib/scripts/crawl-scheduler.ts",
     "crawl:once": "tsx lib/scripts/crawl-scheduler.ts --once",
     "test:ai": "tsx lib/scripts/test-ai.ts",
-    "curate": "tsx lib/scripts/curate-contents.ts",
-    "curate:test": "tsx lib/scripts/curate-contents.ts"
+    "curate": "tsx lib/scripts/run-curation.ts",
+    "curate:test": "tsx lib/scripts/run-curation.ts --limit=20",
+    "curate:policy": "tsx lib/scripts/run-curation.ts --category=policy",
+    "curate:social": "tsx lib/scripts/run-curation.ts --category=social-service",
+    "seed:sample": "tsx lib/scripts/seed-sample-data.ts"
   },
   "keywords": [],
   "author": "",
