@@ -70,18 +70,16 @@ export function verifyToken(request: NextRequest): AuthUser | null {
  * JWT 토큰 생성
  */
 export function generateToken(user: AuthUser, expiresIn: string | number = '7d'): string {
-  return jwt.sign(
-    {
-      id: user.id,
-      email: user.email,
-      department_id: user.department_id,
-      department_name: user.department_name,
-      role: user.role,
-      status: user.status,
-    },
-    JWT_SECRET,
-    { expiresIn } as jwt.SignOptions
-  );
+  const payload = {
+    id: user.id,
+    email: user.email,
+    department_id: user.department_id,
+    department_name: user.department_name,
+    role: user.role,
+    status: user.status,
+  };
+  
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: expiresIn as any });
 }
 
 /**
