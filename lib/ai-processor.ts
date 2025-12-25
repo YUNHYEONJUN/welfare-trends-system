@@ -1,17 +1,30 @@
 import { Content } from './types';
+import { getOpenAIConfig } from './genspark-config';
 
 export interface AIProcessorConfig {
   apiKey?: string;
+  baseURL?: string;
   model?: string;
 }
 
 export class AIContentProcessor {
   private apiKey: string;
+  private baseURL: string;
   private model: string;
 
   constructor(config: AIProcessorConfig = {}) {
-    this.apiKey = config.apiKey || process.env.OPENAI_API_KEY || '';
-    this.model = config.model || 'gpt-4';
+    // GenSpark LLM API 또는 OpenAI API 자동 선택
+    const gensparkConfig = getOpenAIConfig();
+    
+    this.apiKey = config.apiKey || gensparkConfig.apiKey;
+    this.baseURL = config.baseURL || gensparkConfig.baseURL;
+    this.model = config.model || 'gpt-5'; // GenSpark 모델 사용
+    
+    console.log('AI Processor 초기화:', {
+      hasApiKey: !!this.apiKey,
+      baseURL: this.baseURL,
+      model: this.model
+    });
   }
 
   /**
@@ -23,7 +36,7 @@ export class AIContentProcessor {
     }
 
     try {
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      const response = await fetch(`${this.baseURL}/chat/completions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -67,7 +80,7 @@ export class AIContentProcessor {
     }
 
     try {
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      const response = await fetch(`${this.baseURL}/chat/completions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -141,7 +154,7 @@ export class AIContentProcessor {
     }
 
     try {
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      const response = await fetch(`${this.baseURL}/chat/completions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
