@@ -1,21 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server';
+import bcrypt from 'bcryptjs';
 
 const ALLOWED_DOMAIN = '@gg.pass.or.kr';
 const ALLOWED_ADMIN_EMAILS = ['yoonhj79@gmail.com'];
 
 interface SignupRequest {
   email: string;
+  password: string;
 }
 
 export async function POST(request: NextRequest) {
   try {
     const body: SignupRequest = await request.json();
-    const { email } = body;
+    const { email, password } = body;
 
     // 이메일 검증
     if (!email || !email.trim()) {
       return NextResponse.json(
         { success: false, message: '이메일을 입력해주세요.' },
+        { status: 400 }
+      );
+    }
+
+    // 비밀번호 검증
+    if (!password || password.length < 6) {
+      return NextResponse.json(
+        { success: false, message: '비밀번호는 최소 6자 이상이어야 합니다.' },
         { status: 400 }
       );
     }
@@ -56,15 +66,17 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // 비밀번호 해시 생성
+    const saltRounds = 10;
+    const passwordHash = await bcrypt.hash(password, saltRounds);
+
     // TODO: 데이터베이스 연결 후 실제 구현
-    // 현재는 Mock 응답
-    
-    // 실제 구현 예시:
+    // 아래 코드는 실제 DB 연결 시 사용
     /*
-    const db = getDatabase();
+    const { query } = require('@/lib/db');
     
     // 중복 확인
-    const existingUser = await db.query(
+    const existingUser = await query(
       'SELECT id FROM users WHERE email = $1',
       [email]
     );
@@ -77,17 +89,14 @@ export async function POST(request: NextRequest) {
     }
     
     // 사용자 생성 (승인 대기 상태)
-    const result = await db.query(
-      `INSERT INTO users (email, status) 
-       VALUES ($1, 'pending') 
+    const result = await query(
+      `INSERT INTO users (email, password_hash, status) 
+       VALUES ($1, $2, 'pending') 
        RETURNING id, email, status, created_at`,
-      [email]
+      [email, passwordHash]
     );
     
     const user = result.rows[0];
-    
-    // 관리자에게 알림 (선택사항)
-    // await notifyAdminNewSignup(user);
     
     return NextResponse.json({
       success: true,
@@ -102,6 +111,8 @@ export async function POST(request: NextRequest) {
     */
 
     // Mock 응답 (데이터베이스 연결 전)
+    console.log('Password hash created:', passwordHash.substring(0, 20) + '...');
+    
     return NextResponse.json({
       success: true,
       message: '가입 신청이 완료되었습니다. 관리자 승인 후 이용 가능합니다.',

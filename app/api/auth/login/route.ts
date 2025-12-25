@@ -1,23 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getUserByEmail, updateLastLogin, logUserActivity } from '@/lib/db';
 import { generateToken, AuthUser } from '@/lib/auth-middleware';
+import bcrypt from 'bcryptjs';
 
 const ALLOWED_DOMAIN = '@gg.pass.or.kr';
 const ALLOWED_ADMIN_EMAILS = ['yoonhj79@gmail.com'];
 
 interface LoginRequest {
   email: string;
+  password: string;
 }
 
 export async function POST(request: NextRequest) {
   try {
     const body: LoginRequest = await request.json();
-    const { email } = body;
+    const { email, password } = body;
 
     // 이메일 검증
     if (!email || !email.trim()) {
       return NextResponse.json(
         { success: false, message: '이메일을 입력해주세요.' },
+        { status: 400 }
+      );
+    }
+
+    // 비밀번호 검증
+    if (!password || !password.trim()) {
+      return NextResponse.json(
+        { success: false, message: '비밀번호를 입력해주세요.' },
         { status: 400 }
       );
     }
@@ -41,10 +51,20 @@ export async function POST(request: NextRequest) {
     
     if (!user) {
       return NextResponse.json(
-        { success: false, message: '등록되지 않은 이메일입니다.' },
-        { status: 404 }
+        { success: false, message: '이메일 또는 비밀번호가 올바르지 않습니다.' },
+        { status: 401 }
       );
     }
+    
+    // 비밀번호 확인
+    // TODO: DB에서 password_hash 가져오기
+    // const isPasswordValid = await bcrypt.compare(password, user.password_hash);
+    // if (!isPasswordValid) {
+    //   return NextResponse.json(
+    //     { success: false, message: '이메일 또는 비밀번호가 올바르지 않습니다.' },
+    //     { status: 401 }
+    //   );
+    // }
     
     // 승인 상태 확인
     if (user.status === 'pending') {

@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS users (
     email LIKE '%@gg.pass.or.kr' 
     OR email IN ('yoonhj79@gmail.com')
   ),
+  password_hash VARCHAR(255) NOT NULL, -- bcrypt 해시된 비밀번호
   department_id UUID REFERENCES departments(id) ON DELETE SET NULL,
   role VARCHAR(20) NOT NULL DEFAULT 'user' CHECK (role IN ('user', 'admin')),
   status VARCHAR(20) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected', 'suspended')),
