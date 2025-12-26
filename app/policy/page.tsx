@@ -1,6 +1,58 @@
+'use client';
+
 import Link from "next/link";
+import { useEffect, useState } from "react";
+
+interface Content {
+  id: string;
+  title: string;
+  summary: string;
+  ai_summary: string | null;
+  category: string;
+  source: string;
+  published_at: string;
+  is_highlight: boolean;
+  importance_score: number | null;
+  key_points: string[] | null;
+  source_urls: string[] | null;
+  source_count: number | null;
+}
 
 export default function PolicyPage() {
+  const [contents, setContents] = useState<Content[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
+  useEffect(() => {
+    fetchContents();
+  }, [page]);
+
+  const fetchContents = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(`/api/contents?category=policy&page=${page}&limit=10`);
+      const data = await response.json();
+      setContents(data.contents || []);
+      setTotalPages(data.pagination?.totalPages || 1);
+    } catch (error) {
+      console.error('Failed to fetch contents:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const renderStars = (score: number | null) => {
+    if (!score) return null;
+    const stars = '⭐'.repeat(Math.min(score, 10));
+    return (
+      <div className="flex items-center gap-2">
+        <span className="text-yellow-500">{stars}</span>
+        <span className="text-sm text-gray-600">({score}/10)</span>
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* 헤더 */}
@@ -11,128 +63,180 @@ export default function PolicyPage() {
           </Link>
           <h1 className="text-3xl font-bold text-gray-900">정책</h1>
           <p className="mt-2 text-lg text-gray-600">
-            복지부, 경기도, 31개 시군의 정책 동향
+            복지부, 경기도, 31개 시군의 정책 동향 (AI 큐레이션)
           </p>
         </div>
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* 검색 및 필터 */}
-        <div className="bg-white rounded-lg shadow p-6 mb-8">
-          <div className="flex flex-col md:flex-row gap-4">
-            <input
-              type="text"
-              placeholder="키워드 검색..."
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-            />
-            <select className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
-              <option>전체 지역</option>
-              <option>보건복지부</option>
-              <option>경기도</option>
-              <option>서울시</option>
-            </select>
-            <select className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
-              <option>최신순</option>
-              <option>인기순</option>
-            </select>
+        {loading ? (
+          <div className="text-center py-12">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+            <p className="mt-4 text-gray-600">콘텐츠를 불러오는 중...</p>
           </div>
-        </div>
+        ) : contents.length === 0 ? (
+          <div className="bg-white rounded-lg shadow p-12 text-center">
+            <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <h3 className="mt-4 text-lg font-medium text-gray-900">아직 콘텐츠가 없습니다</h3>
+            <p className="mt-2 text-gray-600">크롤링 및 큐레이션을 실행하면 콘텐츠가 표시됩니다.</p>
+          </div>
+        ) : (
+          <>
+            {/* 콘텐츠 리스트 */}
+            <div className="space-y-6">
+              {contents.map((content) => (
+                <div 
+                  key={content.id} 
+                  className={`bg-white rounded-lg shadow hover:shadow-xl transition-shadow p-6 ${
+                    content.is_highlight ? 'border-l-4 border-red-500' : ''
+                  }`}
+                >
+                  {/* 헤더: 출처 + 중요도 */}
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+                        {content.source}
+                      </span>
+                      {content.is_highlight && (
+                        <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm font-medium">
+                          📌 주요기사
+                        </span>
+                      )}
+                      {content.source_count && content.source_count > 1 && (
+                        <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+                          📚 {content.source_count}개 출처 통합
+                        </span>
+                      )}
+                    </div>
+                    {content.importance_score && (
+                      <div className="text-sm">
+                        {renderStars(content.importance_score)}
+                      </div>
+                    )}
+                  </div>
 
-        {/* 콘텐츠 리스트 (샘플) */}
-        <div className="space-y-6">
-          <div className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow p-6">
-            <div className="mb-2">
-              <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">
-                보건복지부
-              </span>
+                  {/* 제목 */}
+                  <h3 className="text-xl font-bold text-gray-900 mb-3">
+                    {content.title}
+                  </h3>
+
+                  {/* AI 요약 또는 일반 요약 */}
+                  {content.ai_summary ? (
+                    <div className="mb-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                        </svg>
+                        <span className="text-sm font-semibold text-purple-600">AI 통합 요약</span>
+                      </div>
+                      <p className="text-gray-700 leading-relaxed pl-7">
+                        {content.ai_summary}
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="text-gray-600 mb-4 leading-relaxed">
+                      {content.summary}
+                    </p>
+                  )}
+
+                  {/* 핵심 포인트 */}
+                  {content.key_points && content.key_points.length > 0 && (
+                    <div className="mb-4 bg-blue-50 rounded-lg p-4">
+                      <div className="font-semibold text-blue-900 mb-2">✓ 핵심 포인트</div>
+                      <ul className="space-y-1">
+                        {content.key_points.map((point, idx) => (
+                          <li key={idx} className="text-blue-800 text-sm flex items-start">
+                            <span className="mr-2">•</span>
+                            <span>{point}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* 출처 링크 */}
+                  {content.source_urls && content.source_urls.length > 0 && (
+                    <div className="mb-4 border-t pt-4">
+                      <div className="font-semibold text-gray-700 mb-2">
+                        📎 원본 출처 ({content.source_urls.length}개)
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {content.source_urls.map((url, idx) => (
+                          <a
+                            key={idx}
+                            href={url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                          >
+                            출처 {idx + 1} →
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 하단: 날짜 + 상세보기 */}
+                  <div className="flex items-center justify-between text-sm">
+                    <div className="text-gray-500">
+                      {new Date(content.published_at).toLocaleDateString('ko-KR', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
+                    </div>
+                    <Link 
+                      href={`/contents/${content.id}`} 
+                      className="text-green-600 hover:text-green-800 font-medium"
+                    >
+                      자세히 보기 →
+                    </Link>
+                  </div>
+                </div>
+              ))}
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">
-              푸드마켓 인프라 활용하는 그냥드림 시범사업
-            </h3>
-            <p className="text-gray-600 mb-4">
-              보건복지부가 올해 12월부터 푸드마켓 인프라를 활용한 '그냥드림' 시범사업을 진행중입니다. 생계가 어려운 경우, 기본적인 먹거리·생필품을 1인당 2만원 한도까지...
-            </p>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center text-sm text-gray-500">
-                <span>2024-12-22</span>
-                <span className="mx-2">•</span>
-                <span>에디터: 박선우</span>
+
+            {/* 페이지네이션 */}
+            {totalPages > 1 && (
+              <div className="mt-8 flex justify-center">
+                <nav className="inline-flex rounded-md shadow">
+                  <button
+                    onClick={() => setPage(p => Math.max(1, p - 1))}
+                    disabled={page === 1}
+                    className="px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 rounded-l-md disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    이전
+                  </button>
+                  {[...Array(Math.min(totalPages, 5))].map((_, idx) => {
+                    const pageNum = idx + 1;
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => setPage(pageNum)}
+                        className={`px-4 py-2 border-t border-b ${
+                          pageNum === page
+                            ? 'bg-green-600 text-white border-green-600'
+                            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                        } ${idx === 0 ? '' : 'border-l'}`}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  })}
+                  <button
+                    onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                    disabled={page === totalPages}
+                    className="px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 rounded-r-md disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    다음
+                  </button>
+                </nav>
               </div>
-              <Link href="#" className="text-green-600 hover:text-green-800 font-medium">
-                자세히 보기 →
-              </Link>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow p-6">
-            <div className="mb-2">
-              <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
-                경기도
-              </span>
-            </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">
-              통합돌봄 관련 민간복지기관의 사회서비스정보시스템 활용 가능
-            </h3>
-            <p className="text-gray-600 mb-4">
-              국무회의에서 「사회보장급여법 시행령」 일부가 개정되었습니다. 현장과 관련된 부분은 노인복지관, 지역자활센터 등 통합돌봄 지원 관련기관이...
-            </p>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center text-sm text-gray-500">
-                <span>2024-12-20</span>
-                <span className="mx-2">•</span>
-                <span>에디터: 박선우</span>
-              </div>
-              <Link href="#" className="text-green-600 hover:text-green-800 font-medium">
-                자세히 보기 →
-              </Link>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow p-6">
-            <div className="mb-2">
-              <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-medium">
-                서울시
-              </span>
-            </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">
-              법인 및 복지시설 공시정보 특히 업무추진비까지 공개
-            </h3>
-            <p className="text-gray-600 mb-4">
-              서울시가 서울복지포털을 대폭 개편했습니다. 이 가운데 서울 소재 사회복지 법인 및 복지시설의 공시정보를 주요 개편 내용으로 소개했습니다...
-            </p>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center text-sm text-gray-500">
-                <span>2024-12-19</span>
-                <span className="mx-2">•</span>
-                <span>에디터: 박선우</span>
-              </div>
-              <Link href="#" className="text-green-600 hover:text-green-800 font-medium">
-                자세히 보기 →
-              </Link>
-            </div>
-          </div>
-        </div>
-
-        {/* 페이지네이션 */}
-        <div className="mt-8 flex justify-center">
-          <nav className="inline-flex rounded-md shadow">
-            <button className="px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 rounded-l-md">
-              이전
-            </button>
-            <button className="px-4 py-2 border-t border-b border-gray-300 bg-green-600 text-sm font-medium text-white">
-              1
-            </button>
-            <button className="px-4 py-2 border-t border-b border-r border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
-              2
-            </button>
-            <button className="px-4 py-2 border-t border-b border-r border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
-              3
-            </button>
-            <button className="px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 rounded-r-md">
-              다음
-            </button>
-          </nav>
-        </div>
+            )}
+          </>
+        )}
       </main>
     </div>
   );
