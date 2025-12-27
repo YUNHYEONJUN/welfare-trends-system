@@ -5,6 +5,8 @@ import Link from 'next/link';
 
 export default function SignupPage() {
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [passwordConfirm, setPasswordConfirm] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
@@ -12,13 +14,25 @@ export default function SignupPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    
+    // 비밀번호 확인
+    if (password !== passwordConfirm) {
+      setError('비밀번호가 일치하지 않습니다.');
+      return;
+    }
+    
+    if (password.length < 8) {
+      setError('비밀번호는 최소 8자 이상이어야 합니다.');
+      return;
+    }
+    
     setLoading(true);
 
     try {
       const response = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, password }),
       });
 
       const result = await response.json();
@@ -113,7 +127,7 @@ export default function SignupPage() {
 
         {/* 폼 */}
         <form onSubmit={handleSubmit}>
-          <div className="mb-6">
+          <div className="mb-4">
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
               이메일 주소 <span className="text-red-500">*</span>
             </label>
@@ -129,6 +143,38 @@ export default function SignupPage() {
             <p className="mt-2 text-sm text-gray-500">
               경기도사회서비스원 공식 이메일을 입력해주세요.
             </p>
+          </div>
+
+          <div className="mb-4">
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+              비밀번호 <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="password"
+              id="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="최소 8자 이상"
+              required
+              minLength={8}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            />
+          </div>
+
+          <div className="mb-6">
+            <label htmlFor="passwordConfirm" className="block text-sm font-medium text-gray-700 mb-2">
+              비밀번호 확인 <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="password"
+              id="passwordConfirm"
+              value={passwordConfirm}
+              onChange={(e) => setPasswordConfirm(e.target.value)}
+              placeholder="비밀번호를 다시 입력하세요"
+              required
+              minLength={8}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            />
           </div>
 
           {error && (

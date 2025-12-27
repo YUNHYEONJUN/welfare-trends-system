@@ -96,6 +96,7 @@ export async function closePool(): Promise<void> {
 export interface User {
   id: string;
   email: string;
+  password_hash?: string;
   department_id: string;
   department_name?: string;
   role: 'user' | 'admin';
@@ -157,7 +158,10 @@ export interface UserActivity {
  */
 export async function getUserByEmail(email: string): Promise<User | null> {
   const result = await query<User>(
-    `SELECT u.*, d.name as department_name
+    `SELECT u.id, u.email, u.password_hash, u.department_id, u.role, u.status,
+            u.approved_at, u.approved_by, u.rejected_reason, u.suspended_reason,
+            u.last_login_at, u.created_at, u.updated_at,
+            d.name as department_name
      FROM users u
      LEFT JOIN departments d ON u.department_id = d.id
      WHERE u.email = $1`,

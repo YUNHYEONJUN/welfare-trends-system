@@ -57,14 +57,20 @@ export async function POST(request: NextRequest) {
     }
     
     // 비밀번호 확인
-    // TODO: DB에서 password_hash 가져오기
-    // const isPasswordValid = await bcrypt.compare(password, user.password_hash);
-    // if (!isPasswordValid) {
-    //   return NextResponse.json(
-    //     { success: false, message: '이메일 또는 비밀번호가 올바르지 않습니다.' },
-    //     { status: 401 }
-    //   );
-    // }
+    if (!user.password_hash) {
+      return NextResponse.json(
+        { success: false, message: '계정에 비밀번호가 설정되지 않았습니다. 관리자에게 문의하세요.' },
+        { status: 401 }
+      );
+    }
+    
+    const isPasswordValid = await bcrypt.compare(password, user.password_hash);
+    if (!isPasswordValid) {
+      return NextResponse.json(
+        { success: false, message: '이메일 또는 비밀번호가 올바르지 않습니다.' },
+        { status: 401 }
+      );
+    }
     
     // 승인 상태 확인
     if (user.status === 'pending') {

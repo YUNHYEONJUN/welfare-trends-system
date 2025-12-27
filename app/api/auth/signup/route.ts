@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
+import { query, getUserByEmail } from '@/lib/db';
 
 const ALLOWED_DOMAIN = '@gg.pass.or.kr';
 const ALLOWED_ADMIN_EMAILS = ['yoonhj79@gmail.com'];
@@ -23,9 +24,9 @@ export async function POST(request: NextRequest) {
     }
 
     // 비밀번호 검증
-    if (!password || password.length < 6) {
+    if (!password || password.length < 8) {
       return NextResponse.json(
-        { success: false, message: '비밀번호는 최소 6자 이상이어야 합니다.' },
+        { success: false, message: '비밀번호는 최소 8자 이상이어야 합니다.' },
         { status: 400 }
       );
     }
@@ -70,30 +71,39 @@ export async function POST(request: NextRequest) {
     const saltRounds = 10;
     const passwordHash = await bcrypt.hash(password, saltRounds);
 
-    // TODO: 데이터베이스 연결 후 실제 구현
-    // 아래 코드는 실제 DB 연결 시 사용
-    /*
-    const { query } = require('@/lib/db');
-    
     // 중복 확인
-    const existingUser = await query(
-      'SELECT id FROM users WHERE email = $1',
-      [email]
-    );
+    const existingUser = await getUserByEmail(email);
     
-    if (existingUser.rows.length > 0) {
+    if (existingUser) {
       return NextResponse.json(
         { success: false, message: '이미 가입된 이메일입니다.' },
         { status: 409 }
       );
     }
     
+    // 관리자 부서 ID 가져오기
+    const departmentResult = await query(
+      'SELECT id FROM departments WHERE name = $1',
+      ['관리자']
+    );
+    
+    const departmentId = departmentResult.rows.length > 0 
+      ? departmentResult.rows[0].id 
+      : null;
+    
+    if (!departmentId) {
+      return NextResponse.json(
+        { success: false, message: '부서 정보를 찾을 수 없습니다. 관리자에게 문의하세요.' },
+        { status: 500 }
+      );
+    }
+    
     // 사용자 생성 (승인 대기 상태)
     const result = await query(
-      `INSERT INTO users (email, password_hash, status) 
-       VALUES ($1, $2, 'pending') 
+      `INSERT INTO users (email, password_hash, department_id, role, status) 
+       VALUES ($1, $2, $3, $4, 'pending') 
        RETURNING id, email, status, created_at`,
-      [email, passwordHash]
+      [email, passwordHash, departmentId, 'user']
     );
     
     const user = result.rows[0];
@@ -106,21 +116,6 @@ export async function POST(request: NextRequest) {
         email: user.email,
         status: user.status,
         created_at: user.created_at
-      }
-    });
-    */
-
-    // Mock 응답 (데이터베이스 연결 전)
-    console.log('Password hash created:', passwordHash.substring(0, 20) + '...');
-    
-    return NextResponse.json({
-      success: true,
-      message: '가입 신청이 완료되었습니다. 관리자 승인 후 이용 가능합니다.',
-      user: {
-        id: 'mock-user-id',
-        email: email,
-        status: 'pending',
-        created_at: new Date().toISOString()
       }
     });
 
