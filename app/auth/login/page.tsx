@@ -24,18 +24,22 @@ export default function LoginPage() {
       });
 
       const result = await response.json();
+      console.log('Login result:', result); // 디버깅용
 
       if (result.success) {
-        // 세션 저장 (실제로는 쿠키 또는 localStorage)
+        // 세션 저장
         localStorage.setItem('user', JSON.stringify(result.user));
         localStorage.setItem('token', result.token);
+        
+        console.log('Saved to localStorage, redirecting...'); // 디버깅용
 
-        // 모든 사용자를 홈으로 리다이렉트
-        router.push('/');
+        // 강제 리다이렉트 (window.location 사용)
+        window.location.href = '/';
       } else {
         setError(result.message || '로그인 처리 중 오류가 발생했습니다.');
       }
     } catch (err) {
+      console.error('Login error:', err); // 디버깅용
       setError('네트워크 오류가 발생했습니다.');
     } finally {
       setLoading(false);
