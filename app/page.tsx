@@ -1,6 +1,50 @@
+'use client';
+
 import Link from "next/link";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userEmail, setUserEmail] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
+
+  useEffect(() => {
+    // 로그인 상태 확인
+    const user = localStorage.getItem('user');
+    const token = localStorage.getItem('token');
+    
+    if (user && token) {
+      try {
+        const userData = JSON.parse(user);
+        setIsLoggedIn(true);
+        setUserEmail(userData.email);
+      } catch (error) {
+        console.error('Failed to parse user data:', error);
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+      }
+    }
+    setIsLoading(false);
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
+    setIsLoggedIn(false);
+    setUserEmail('');
+    router.push('/');
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
       {/* 헤더 */}
@@ -13,19 +57,33 @@ export default function Home() {
               </h1>
               <p className="mt-2 text-lg text-gray-600">복지동향 정보 시스템</p>
             </div>
-            <div className="flex gap-4">
-              <Link
-                href="/auth/login"
-                className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-              >
-                로그인
-              </Link>
-              <Link
-                href="/auth/signup"
-                className="px-6 py-2.5 border-2 border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors font-medium"
-              >
-                회원가입
-              </Link>
+            <div className="flex gap-4 items-center">
+              {isLoggedIn ? (
+                <>
+                  <span className="text-gray-700">{userEmail}</span>
+                  <button
+                    onClick={handleLogout}
+                    className="px-6 py-2.5 border-2 border-red-600 text-red-600 rounded-lg hover:bg-red-50 transition-colors font-medium"
+                  >
+                    로그아웃
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href="/auth/login"
+                    className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                  >
+                    로그인
+                  </Link>
+                  <Link
+                    href="/auth/signup"
+                    className="px-6 py-2.5 border-2 border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors font-medium"
+                  >
+                    회원가입
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -44,26 +102,28 @@ export default function Home() {
           </p>
         </section>
 
-        {/* 로그인 안내 */}
-        <div className="bg-blue-50 border-l-4 border-blue-500 p-6 mb-8 rounded-r-lg">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <svg className="h-6 w-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <div className="ml-3">
-              <p className="text-sm text-blue-700">
-                콘텐츠를 확인하시려면 <Link href="/auth/login" className="font-medium underline hover:text-blue-800">로그인</Link>이 필요합니다.
-              </p>
+        {/* 로그인 안내 (비로그인 시만 표시) */}
+        {!isLoggedIn && (
+          <div className="bg-blue-50 border-l-4 border-blue-500 p-6 mb-8 rounded-r-lg">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <svg className="h-6 w-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm text-blue-700">
+                  콘텐츠를 확인하시려면 <Link href="/auth/login" className="font-medium underline hover:text-blue-800">로그인</Link>이 필요합니다.
+                </p>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* 카테고리 카드 */}
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
           {/* 학술 */}
-          <Link href="/auth/login?redirect=/academy">
+          <Link href={isLoggedIn ? "/academy" : "/auth/login?redirect=/academy"}>
             <div className="bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition-shadow cursor-pointer border-t-4 border-blue-500">
               <div className="text-blue-500 mb-4">
                 <svg
@@ -88,7 +148,7 @@ export default function Home() {
           </Link>
 
           {/* 정책 */}
-          <Link href="/auth/login?redirect=/policy">
+          <Link href={isLoggedIn ? "/policy" : "/auth/login?redirect=/policy"}>
             <div className="bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition-shadow cursor-pointer border-t-4 border-green-500">
               <div className="text-green-500 mb-4">
                 <svg
@@ -113,7 +173,7 @@ export default function Home() {
           </Link>
 
           {/* 짧은생각 */}
-          <Link href="/auth/login?redirect=/thoughts">
+          <Link href={isLoggedIn ? "/thoughts" : "/auth/login?redirect=/thoughts"}>
             <div className="bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition-shadow cursor-pointer border-t-4 border-purple-500">
               <div className="text-purple-500 mb-4">
                 <svg
@@ -138,7 +198,7 @@ export default function Home() {
           </Link>
 
           {/* 사회서비스원 */}
-          <Link href="/auth/login?redirect=/social-service">
+          <Link href={isLoggedIn ? "/social-service" : "/auth/login?redirect=/social-service"}>
             <div className="bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition-shadow cursor-pointer border-t-4 border-indigo-500">
               <div className="text-indigo-500 mb-4">
                 <svg

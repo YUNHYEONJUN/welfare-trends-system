@@ -30,12 +30,8 @@ export default function LoginPage() {
         localStorage.setItem('user', JSON.stringify(result.user));
         localStorage.setItem('token', result.token);
 
-        // 역할에 따라 리다이렉트
-        if (result.user.role === 'admin') {
-          router.push('/admin');
-        } else {
-          router.push('/');
-        }
+        // 모든 사용자를 홈으로 리다이렉트
+        router.push('/');
       } else {
         setError(result.message || '로그인 처리 중 오류가 발생했습니다.');
       }
