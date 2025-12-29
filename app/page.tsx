@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 export default function Home() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userEmail, setUserEmail] = useState('');
+  const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
@@ -20,6 +21,7 @@ export default function Home() {
         const userData = JSON.parse(user);
         setIsLoggedIn(true);
         setUserEmail(userData.email);
+        setIsAdmin(userData.role === 'admin');
       } catch (error) {
         console.error('Failed to parse user data:', error);
         localStorage.removeItem('user');
@@ -61,6 +63,14 @@ export default function Home() {
               {isLoggedIn ? (
                 <>
                   <span className="text-gray-700">{userEmail}</span>
+                  {isAdmin && (
+                    <Link
+                      href="/admin"
+                      className="px-6 py-2.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
+                    >
+                      관리자
+                    </Link>
+                  )}
                   <button
                     onClick={handleLogout}
                     className="px-6 py-2.5 border-2 border-red-600 text-red-600 rounded-lg hover:bg-red-50 transition-colors font-medium"

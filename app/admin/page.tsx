@@ -44,6 +44,10 @@ interface DashboardData {
 export default function AdminDashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [crawlLoading, setCrawlLoading] = useState(false);
+  const [curateLoading, setCurateLoading] = useState(false);
+  const [crawlResult, setCrawlResult] = useState<string>('');
+  const [curateResult, setCurateResult] = useState<string>('');
 
   useEffect(() => {
     fetchDashboardData();
@@ -60,6 +64,76 @@ export default function AdminDashboard() {
       console.error('대시보드 데이터 로드 실패:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCrawl = async () => {
+    if (!confirm('크롤링을 시작하시겠습니까?\n모든 소스에서 최신 데이터를 수집합니다. (약 2-5분 소요)')) {
+      return;
+    }
+
+    setCrawlLoading(true);
+    setCrawlResult('크롤링 시작 중...');
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/cron/crawl', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_CRON_SECRET || 'DVOKqd8p1BVUcLXisj7l4jnMZBZ/2Xe/aho2QGVCO8k='}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        setCrawlResult(`✅ 크롤링 완료! (${result.elapsed}ms)\n${result.message || ''}`);
+        // 5초 후 결과 메시지 초기화
+        setTimeout(() => setCrawlResult(''), 5000);
+      } else {
+        setCrawlResult(`❌ 크롤링 실패: ${result.message || result.error}`);
+      }
+    } catch (error) {
+      console.error('크롤링 오류:', error);
+      setCrawlResult(`❌ 크롤링 오류: ${error}`);
+    } finally {
+      setCrawlLoading(false);
+    }
+  };
+
+  const handleCurate = async () => {
+    if (!confirm('AI 큐레이션을 시작하시겠습니까?\n유사한 콘텐츠를 통합하고 AI 요약을 생성합니다. (약 3-10분 소요)')) {
+      return;
+    }
+
+    setCurateLoading(true);
+    setCurateResult('AI 큐레이션 시작 중...');
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/cron/curate', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_CRON_SECRET || 'DVOKqd8p1BVUcLXisj7l4jnMZBZ/2Xe/aho2QGVCO8k='}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        setCurateResult(`✅ 큐레이션 완료! (${result.elapsed}ms)\n${result.message || ''}`);
+        // 5초 후 결과 메시지 초기화
+        setTimeout(() => setCurateResult(''), 5000);
+      } else {
+        setCurateResult(`❌ 큐레이션 실패: ${result.message || result.error}`);
+      }
+    } catch (error) {
+      console.error('큐레이션 오류:', error);
+      setCurateResult(`❌ 큐레이션 오류: ${error}`);
+    } finally {
+      setCurateLoading(false);
     }
   };
 
@@ -126,6 +200,97 @@ export default function AdminDashboard() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* 크롤링/큐레이션 컨트롤 */}
+        <div className="bg-white rounded-lg shadow-lg p-6 mb-8 border-l-4 border-blue-500">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">📥 데이터 수집 및 처리</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* 크롤링 */}
+            <div className="border rounded-lg p-4">
+              <div className="flex items-center mb-3">
+                <svg className="w-6 h-6 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                <h3 className="text-lg font-semibold text-gray-900">크롤링</h3>
+              </div>
+              <p className="text-sm text-gray-600 mb-4">
+                복지부, 경기도, 31개 시군의 최신 데이터를 수집합니다.
+                <br />
+                <span className="text-xs text-gray-500">예상 소요 시간: 2-5분</span>
+              </p>
+              <button
+                onClick={handleCrawl}
+                disabled={crawlLoading}
+                className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition font-medium"
+              >
+                {crawlLoading ? (
+                  <span className="flex items-center justify-center">
+                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    크롤링 중...
+                  </span>
+                ) : (
+                  '🚀 크롤링 시작'
+                )}
+              </button>
+              {crawlResult && (
+                <div className={`mt-3 p-3 rounded-lg text-sm whitespace-pre-line ${
+                  crawlResult.startsWith('✅') ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'
+                }`}>
+                  {crawlResult}
+                </div>
+              )}
+            </div>
+
+            {/* 큐레이션 */}
+            <div className="border rounded-lg p-4">
+              <div className="flex items-center mb-3">
+                <svg className="w-6 h-6 text-purple-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                </svg>
+                <h3 className="text-lg font-semibold text-gray-900">AI 큐레이션</h3>
+              </div>
+              <p className="text-sm text-gray-600 mb-4">
+                유사 콘텐츠를 통합하고 AI 요약을 생성합니다.
+                <br />
+                <span className="text-xs text-gray-500">예상 소요 시간: 3-10분</span>
+              </p>
+              <button
+                onClick={handleCurate}
+                disabled={curateLoading}
+                className="w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition font-medium"
+              >
+                {curateLoading ? (
+                  <span className="flex items-center justify-center">
+                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    큐레이션 중...
+                  </span>
+                ) : (
+                  '✨ 큐레이션 시작'
+                )}
+              </button>
+              {curateResult && (
+                <div className={`mt-3 p-3 rounded-lg text-sm whitespace-pre-line ${
+                  curateResult.startsWith('✅') ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'
+                }`}>
+                  {curateResult}
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+            <p className="text-sm text-blue-700">
+              💡 <strong>권장 순서:</strong> 1️⃣ 크롤링 → 2️⃣ 큐레이션
+              <br />
+              <span className="text-xs">크롤링으로 데이터를 수집한 후, 큐레이션으로 AI 요약을 생성하세요.</span>
+            </p>
+          </div>
+        </div>
+
         {/* 전체 통계 카드 */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <StatCard
