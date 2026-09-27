@@ -1,19 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-function checkAdminAuth(request: NextRequest): { isAdmin: boolean } {
-  // TODO: 실제 세션/토큰 검증
-  return { isAdmin: true };
-}
+import { requireAdmin } from '@/lib/auth-middleware';
 
 // GET: 사용자 활동 통계 (개인별, 부서별, 일별)
 export async function GET(request: NextRequest) {
   try {
-    const { isAdmin } = checkAdminAuth(request);
-    
-    if (!isAdmin) {
+    const { error } = requireAdmin(request);
+    if (error) {
       return NextResponse.json(
-        { success: false, message: '관리자 권한이 필요합니다.' },
-        { status: 403 }
+        { success: false, message: error.message },
+        { status: error.status }
       );
     }
 

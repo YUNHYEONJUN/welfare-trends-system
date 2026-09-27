@@ -7,7 +7,7 @@ import { NextRequest } from 'next/server';
 import jwt from 'jsonwebtoken';
 
 // JWT 시크릿 키 (환경 변수에서 가져오기)
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+const JWT_SECRET = process.env.JWT_SECRET;
 
 // 사용자 인터페이스
 export interface AuthUser {
@@ -30,6 +30,7 @@ interface JWTPayload extends AuthUser {
  */
 export function verifyToken(request: NextRequest): AuthUser | null {
   try {
+    if (!JWT_SECRET) return null;
     // Authorization 헤더에서 토큰 추출
     const authHeader = request.headers.get('authorization');
     
@@ -70,6 +71,7 @@ export function verifyToken(request: NextRequest): AuthUser | null {
  * JWT 토큰 생성
  */
 export function generateToken(user: AuthUser, expiresIn: string | number = '7d'): string {
+  if (!JWT_SECRET) throw new Error('JWT_SECRET is not configured');
   const payload = {
     id: user.id,
     email: user.email,

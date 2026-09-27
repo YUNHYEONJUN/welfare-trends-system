@@ -8,7 +8,7 @@ export async function GET(request: Request) {
     // Vercel Cron 인증 확인 - Request 객체에서 직접 헤더 가져오기
     const authHeader = request.headers.get('authorization');
     
-    if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    if (!process.env.CRON_SECRET || authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
       console.error('[Cron/Curate] Unauthorized access attempt');
       return NextResponse.json(
         { error: 'Unauthorized' },

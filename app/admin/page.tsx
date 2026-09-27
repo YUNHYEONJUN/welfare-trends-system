@@ -55,7 +55,18 @@ export default function AdminDashboard() {
 
   const fetchDashboardData = async () => {
     try {
-      const response = await fetch('/api/admin/dashboard');
+      const token = localStorage.getItem('token');
+      if (!token) {
+        window.location.replace('/auth/login');
+        return;
+      }
+      const response = await fetch('/api/admin/dashboard', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (response.status === 401 || response.status === 403) {
+        window.location.replace('/auth/login');
+        return;
+      }
       const result = await response.json();
       if (result.success) {
         setData(result.data);
@@ -80,7 +91,7 @@ export default function AdminDashboard() {
       const response = await fetch('/api/cron/crawl', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_CRON_SECRET || 'DVOKqd8p1BVUcLXisj7l4jnMZBZ/2Xe/aho2QGVCO8k='}`,
+          'Authorization': `Bearer ${token || ''}`,
           'Content-Type': 'application/json',
         },
       });
@@ -115,7 +126,7 @@ export default function AdminDashboard() {
       const response = await fetch('/api/cron/curate', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_CRON_SECRET || 'DVOKqd8p1BVUcLXisj7l4jnMZBZ/2Xe/aho2QGVCO8k='}`,
+          'Authorization': `Bearer ${token || ''}`,
           'Content-Type': 'application/json',
         },
       });

@@ -1,25 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-// 관리자 권한 확인 미들웨어 (실제 구현 시 사용)
-function checkAdminAuth(request: NextRequest): { isAdmin: boolean; userId?: string } {
-  // TODO: 실제 세션/토큰 검증
-  // const token = request.headers.get('authorization');
-  // const session = verifyToken(token);
-  // return { isAdmin: session.role === 'admin', userId: session.userId };
-  
-  // Mock (개발용)
-  return { isAdmin: true, userId: 'mock-admin-id' };
-}
+import { requireAdmin } from '@/lib/auth-middleware';
 
 // GET: 사용자 목록 조회 (필터링 지원)
 export async function GET(request: NextRequest) {
   try {
-    const { isAdmin } = checkAdminAuth(request);
-    
-    if (!isAdmin) {
+    const { error } = requireAdmin(request);
+    if (error) {
       return NextResponse.json(
-        { success: false, message: '관리자 권한이 필요합니다.' },
-        { status: 403 }
+        { success: false, message: error.message },
+        { status: error.status }
       );
     }
 
@@ -152,14 +141,14 @@ export async function GET(request: NextRequest) {
 // POST: 사용자 승인/거부
 export async function POST(request: NextRequest) {
   try {
-    const { isAdmin, userId: adminId } = checkAdminAuth(request);
-    
-    if (!isAdmin) {
+    const { user, error } = requireAdmin(request);
+    if (error) {
       return NextResponse.json(
-        { success: false, message: '관리자 권한이 필요합니다.' },
-        { status: 403 }
+        { success: false, message: error.message },
+        { status: error.status }
       );
     }
+    const adminId = user!.id;
 
     const body = await request.json();
     const { user_id, approved, department_id, reason } = body;
