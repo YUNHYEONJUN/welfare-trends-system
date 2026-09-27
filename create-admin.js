@@ -3,7 +3,11 @@ const bcrypt = require('bcryptjs');
 
 const DATABASE_URL = process.argv[2];
 const email = process.argv[3] || 'admin@welfare-trends.com';
-const password = process.argv[4] || 'admin123!@#';
+const password = process.argv[4];
+if (!DATABASE_URL || !email || !password) {
+  console.error('Usage: node create-admin.js <database-url> <email> <password>');
+  process.exit(2);
+}
 
 async function createAdmin() {
   const client = new Client({
@@ -31,7 +35,6 @@ async function createAdmin() {
 
     console.log('\n🎉 관리자 계정 생성 완료!');
     console.log('📧 Email:', result.rows[0].email);
-    console.log('🔑 Password:', password);
     console.log('👤 Role:', result.rows[0].role);
     console.log('✅ Status:', result.rows[0].status);
     console.log('\n⚠️  보안을 위해 첫 로그인 후 비밀번호를 변경하세요!');

@@ -169,7 +169,7 @@ INSERT INTO departments (id, name, description)
 VALUES (gen_random_uuid(), '기획예산팀', '기획예산팀')
 ON CONFLICT DO NOTHING;
 
--- yoonhj79@gmail.com 계정 (비밀번호: welcome123)
+-- yoonhj79@gmail.com 계정 (비밀번호: YOUR_ADMIN_PASSWORD)
 INSERT INTO users (
   email,
   password_hash,
@@ -181,7 +181,7 @@ INSERT INTO users (
 )
 VALUES (
   'yoonhj79@gmail.com',
-  '$2a$10$YourHashedPasswordHere',  -- bcrypt hash of 'welcome123'
+  '$2a$10$YourHashedPasswordHere',  -- bcrypt hash of 'YOUR_ADMIN_PASSWORD'
   '관리자',
   (SELECT id FROM departments WHERE name = '기획예산팀' LIMIT 1),
   'admin',
@@ -195,7 +195,7 @@ SET role = 'admin', status = 'approved';
 **비밀번호 해시 생성:**
 ```bash
 # Node.js로 bcrypt 해시 생성
-node -e "const bcrypt = require('bcryptjs'); console.log(bcrypt.hashSync('welcome123', 10));"
+node -e "const bcrypt = require('bcryptjs'); console.log(bcrypt.hashSync('YOUR_ADMIN_PASSWORD', 10));"
 ```
 
 ---
@@ -308,7 +308,7 @@ https://your-project.vercel.app
 ### 2. 로그인 테스트
 ```
 이메일: yoonhj79@gmail.com
-비밀번호: welcome123
+비밀번호: YOUR_ADMIN_PASSWORD
 ```
 
 ### 3. API 테스트

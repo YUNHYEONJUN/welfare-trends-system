@@ -120,8 +120,8 @@ psql "$DB_URL" -f add_password_field.sql
 
 ### 관리자 계정 생성
 ```bash
-# 비밀번호 해시 생성 (welcome123)
-node -e "console.log(require('bcryptjs').hashSync('welcome123', 10))"
+# 비밀번호 해시 생성 (YOUR_ADMIN_PASSWORD)
+node -e "console.log(require('bcryptjs').hashSync('YOUR_ADMIN_PASSWORD', 10))"
 # 출력된 해시를 복사
 
 # PostgreSQL 접속
@@ -195,7 +195,7 @@ open https://your-project.vercel.app
 ### 2. 로그인 테스트
 ```
 이메일: yoonhj79@gmail.com
-비밀번호: welcome123
+비밀번호: YOUR_ADMIN_PASSWORD
 ```
 - [ ] 로그인 성공
 - [ ] 관리자 권한 확인
@@ -209,7 +209,7 @@ curl https://your-project.vercel.app/api/contents
 # Auth API
 curl -X POST https://your-project.vercel.app/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"yoonhj79@gmail.com","password":"welcome123"}'
+  -d '{"email":"yoonhj79@gmail.com","password":"YOUR_ADMIN_PASSWORD"}'
 ```
 - [ ] API 응답 정상
 - [ ] 데이터베이스 연결 확인

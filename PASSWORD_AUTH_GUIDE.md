@@ -11,7 +11,7 @@
 ### 계정 정보
 ```
 이메일: yoonhj79@gmail.com
-비밀번호: welcome123
+비밀번호: YOUR_ADMIN_PASSWORD
 역할: admin (관리자)
 ```
 
@@ -21,7 +21,7 @@
 ```
 URL: http://localhost:3000/auth/login
 이메일: yoonhj79@gmail.com
-비밀번호: welcome123
+비밀번호: YOUR_ADMIN_PASSWORD
 ```
 
 #### 2️⃣ API (curl)
@@ -30,7 +30,7 @@ curl -X POST http://localhost:3000/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{
     "email": "yoonhj79@gmail.com",
-    "password": "welcome123"
+    "password": "YOUR_ADMIN_PASSWORD"
   }'
 ```
 
@@ -54,13 +54,13 @@ psql -U postgres -d welfare_trends
 ALTER TABLE users ADD COLUMN IF NOT EXISTS password_hash VARCHAR(255);
 
 -- 2. yoonhj79@gmail.com 관리자 생성
--- 비밀번호: welcome123 (bcrypt 해시)
+-- 비밀번호: YOUR_ADMIN_PASSWORD (bcrypt 해시)
 ALTER TABLE users DROP CONSTRAINT IF EXISTS valid_email;
 
 INSERT INTO users (email, password_hash, department_id, role, status, approved_at, created_at, updated_at)
 VALUES (
     'yoonhj79@gmail.com',
-    '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy',
+    :'admin_password_hash',
     (SELECT id FROM departments WHERE name = '기획예산팀'),
     'admin',
     'approved',
@@ -69,7 +69,7 @@ VALUES (
     NOW()
 )
 ON CONFLICT (email) DO UPDATE SET
-    password_hash = '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy',
+    password_hash = EXCLUDED.password_hash,
     role = 'admin',
     status = 'approved';
 
@@ -150,7 +150,7 @@ WHERE email = 'kim.worker@gg.pass.or.kr';
 ### 2. 관리자 웹 페이지에서 승인 (개발 예정)
 ```
 URL: http://localhost:3000/admin/users
-로그인: yoonhj79@gmail.com / welcome123
+로그인: yoonhj79@gmail.com / YOUR_ADMIN_PASSWORD
 ```
 
 ---
@@ -173,7 +173,7 @@ WHERE email = 'yoonhj79@gmail.com';
 # Node.js로 bcrypt 해시 생성
 node << 'EOF'
 const bcrypt = require('bcryptjs');
-const password = 'mynewpassword123';
+const password = process.env.ADMIN_PASSWORD;
 bcrypt.hash(password, 10, (err, hash) => {
     if (err) throw err;
     console.log('비밀번호:', password);
@@ -190,7 +190,7 @@ EOF
 ```bash
 curl -X POST http://localhost:3000/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"yoonhj79@gmail.com","password":"welcome123"}'
+  -d '{"email":"yoonhj79@gmail.com","password":"YOUR_ADMIN_PASSWORD"}'
 ```
 
 **예상 결과**: ✅ 성공, JWT 토큰 발급
@@ -234,7 +234,7 @@ curl -X POST http://localhost:3000/api/auth/login \
 
 3. **app/api/auth/login/route.ts**
    - `password` 파라미터 추가
-   - 비밀번호 검증 (TODO: DB 연동 후 활성화)
+   - DB의 `password_hash`와 bcrypt.compare로 비밀번호 검증
 
 4. **add_password_field.sql** (새 파일)
    - 마이그레이션 스크립트
@@ -253,8 +253,8 @@ curl -X POST http://localhost:3000/api/auth/login \
 
 ## ⚠️ 주의사항
 
-1. **테스트 비밀번호**: `welcome123`은 테스트용입니다. 프로덕션에서는 강력한 비밀번호로 변경하세요.
-2. **DB 연동 필요**: 현재 로그인 API는 비밀번호 검증이 주석 처리되어 있습니다. DB 연동 후 활성화하세요.
+1. **비밀번호 입력**: `YOUR_ADMIN_PASSWORD`는 자리표시자입니다. 실제 비밀번호는 공개 문서에 적지 마세요.
+2. **로그인 검증**: 현재 로그인 API는 DB의 `password_hash`를 bcrypt.compare로 대조합니다.
 3. **비밀번호 재설정**: 아직 비밀번호 재설정 기능이 없습니다. 관리자가 SQL로 직접 변경해야 합니다.
 
 ---
@@ -262,7 +262,7 @@ curl -X POST http://localhost:3000/api/auth/login \
 ## 🆘 문제 해결
 
 ### Q1: "이메일 또는 비밀번호가 올바르지 않습니다" 오류
-- 비밀번호 확인: `welcome123`
+- 비밀번호 확인: `YOUR_ADMIN_PASSWORD`
 - 이메일 확인: `yoonhj79@gmail.com`
 - DB 계정 존재 확인:
   ```sql
@@ -293,7 +293,7 @@ psql -U postgres -d welfare_trends -c \
 # 3. 로그인 테스트
 curl -X POST http://localhost:3000/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"yoonhj79@gmail.com","password":"welcome123"}'
+  -d '{"email":"yoonhj79@gmail.com","password":"YOUR_ADMIN_PASSWORD"}'
 ```
 
 **예상 결과**:
@@ -301,7 +301,7 @@ curl -X POST http://localhost:3000/api/auth/login \
 email: yoonhj79@gmail.com
 role: admin
 status: approved
-비밀번호: welcome123
+비밀번호: YOUR_ADMIN_PASSWORD
 ```
 
 ---

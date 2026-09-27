@@ -1,3 +1,6 @@
+\set ON_ERROR_STOP on
+BEGIN;
+
 -- 사용자 테이블에 password_hash 필드 추가
 -- 기존 테이블에 비밀번호 필드를 추가하는 마이그레이션
 
@@ -6,10 +9,10 @@ ALTER TABLE users
 ADD COLUMN IF NOT EXISTS password_hash VARCHAR(255);
 
 -- 2. 기존 사용자들에게 임시 비밀번호 설정
--- bcrypt 해시: 'welcome123' (테스트용)
--- $2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy
+-- 기존 사용자용 임시 해시는 실행 전에 별도 생성
+-- psql 변수 existing_user_password_hash 필요
 UPDATE users 
-SET password_hash = '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy'
+SET password_hash = :'existing_user_password_hash'
 WHERE password_hash IS NULL;
 
 -- 3. password_hash를 NOT NULL로 변경
@@ -35,8 +38,8 @@ FROM users;
 ALTER TABLE users DROP CONSTRAINT IF EXISTS valid_email;
 
 -- yoonhj79@gmail.com 관리자 계정 생성
--- 비밀번호: admin123
--- bcrypt 해시: $2a$10$8K1p/a0dL3.GyJHR7xA4au8u9H6EqNvVjKj1Q7n0vV0K0K0K0K0K0 (예시)
+-- 비밀번호: YOUR_UNIQUE_ADMIN_PASSWORD
+-- psql 변수 admin_password_hash 필요
 INSERT INTO users (
     email,
     password_hash,
@@ -49,7 +52,7 @@ INSERT INTO users (
 )
 VALUES (
     'yoonhj79@gmail.com',
-    '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', -- 'welcome123'
+    :'admin_password_hash', -- supplied privately
     (SELECT id FROM departments WHERE name = '기획예산팀' LIMIT 1),
     'admin',
     'approved',
@@ -58,7 +61,7 @@ VALUES (
     NOW()
 )
 ON CONFLICT (email) DO UPDATE SET
-    password_hash = '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy',
+    password_hash = EXCLUDED.password_hash,
     role = 'admin',
     status = 'approved',
     approved_at = NOW(),
@@ -87,12 +90,14 @@ FROM users u
 LEFT JOIN departments d ON u.department_id = d.id
 ORDER BY u.created_at DESC;
 
+COMMIT;
+
 -- ============================================
 -- 실행 결과
 -- ============================================
 -- yoonhj79@gmail.com 계정 정보:
 -- 이메일: yoonhj79@gmail.com
--- 비밀번호: welcome123
+-- 비밀번호: YOUR_ADMIN_PASSWORD
 -- 역할: admin
 -- 상태: approved
 -- 부서: 기획예산팀
@@ -100,5 +105,5 @@ ORDER BY u.created_at DESC;
 -- 로그인 방법:
 -- http://localhost:3000/auth/login
 -- 이메일: yoonhj79@gmail.com
--- 비밀번호: welcome123
+-- 비밀번호: YOUR_ADMIN_PASSWORD
 -- ============================================

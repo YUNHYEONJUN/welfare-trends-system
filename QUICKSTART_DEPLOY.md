@@ -145,7 +145,7 @@ https://your-domain.com
 ### 2. 로그인 테스트
 ```
 이메일: yoonhj79@gmail.com
-비밀번호: welcome123
+비밀번호: YOUR_ADMIN_PASSWORD
 ```
 
 ### 3. 데이터베이스 연결 확인
