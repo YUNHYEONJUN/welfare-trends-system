@@ -1,3 +1,5 @@
+> **2026-10-04 제거됨** — 이 문서의 `/api/cron/crawl`·`/api/cron/curate` 라우트, 관리자 화면의 수동 크롤링·큐레이션 버튼, `vercel.json`의 크론 두 개는 삭제했다. 두 라우트는 `TODO` 상태의 모의 실행(2~3초 대기)이었고 운영에 `CRON_SECRET`도 없어 실제로 하는 일이 없었다. 수집·큐레이션은 `npm run crawl*`, `npm run curate` 스크립트를 쓴다.
+
 # Vercel Cron 설정 가이드
 
 ## 📋 개요
